@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <title>Submit Parcel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="../src/stylez.css">
+</header>
+<body>
+
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top">
+        <div class="w3-bar" id="myNavbar">
+            <a class="w3-bar-item w3-button w3-hover-black w3-hide-medium w3-hide-large w3-right" href="javascript:void(0);" onclick="toggleFunction()" title="Toggle Navigation Menu">
+                <i class="fa fa-bars"></i>
+            </a>
+            <a href="../index.html" class="w3-bar-item w3-button"><i class="fa fa-home"></i>HOME</a>
+            <a href="../sites/submit.html" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-envelope"></i> Submit Parcel</a>
+            <a href="../sites/report.html" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-user"></i> Report Hop</a>
+            <a href="../sites/track.html" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-truck"></i> Track Parcel</a>
+            <a href="../swagger/index.html" class="w3-bar-item w3-button w3-hide-small"><i class="fa fa-refresh"></i> Swagger</a>
+
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                $("button").click(function () {
+                    var parcel = $("#parcelData").val();
+                    var response = $("#errorData");
+                    var button = $("button");
+
+                    button.attr("disabled", true); // disable first
+                    button.html(`<span class="fa fa-spinner fa-spin"></span> Loading...`); // add spinner to button
+
+                    var request = $.ajax({
+                        url: "/api/parcel/",
+                        type: "POST",
+                        data: parcel,
+                        Accept: "application/json",
+                        contentType: "application/json",
+                        dataType: "json"
+                    });
+
+                    request
+                        .done(function (data) {
+                            //response.val(JSON.stringify(data));
+                            response.val(data["trackingId"]);
+                        })
+                        .fail(function (data) {
+                            response.val(data.responseText);
+                        })
+                        .always(function () {
+                            button.attr("disabled", false);
+                            button.html(`submit parcel`);
+                        });
+                });
+            });
+        </script>
+        <div class="w3-container customKUH">
+            <h1>Submit a new Parcel</h1>
+            <textarea id="parcelData" rows="12" cols="50"></textarea>
+            <br>
+            <label>Enter Parcel as JSON</label>
+            <button class="w3-button w3-red" type="button">Submit</button>
+            <br>
+        </div>
+        <div class="customKUH3">
+            <textarea rows="1" cols="50" id="errorData" style="border: none;"></textarea>
+            <label>Your tracking ID</label>
+            <div id="errorDiv"></div>
+        </div>
+
+</body>
+</html>

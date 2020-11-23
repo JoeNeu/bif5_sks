@@ -1,0 +1,535 @@
+openapi: 3.0.1
+info:
+  title: Parcel Logistics Service
+  contact:
+    name: SKS
+    url: http://www.technikum-wien.at/
+  version: 1.4.1
+servers:
+- url: /api
+tags:
+  - name: sender
+    description: Operations for the sender of a parcel.
+  - name: receipient
+    description: Operations for the receiver of a parcel.
+  - name: warehouse-management
+    description: Operations for the warehouse management.
+  - name: logisticsPartner
+    description: Operations for working with a logistics partner for a different region.
+  - name: staff
+    description: Operations for the logistics staff.
+paths:
+  /parcel:
+    post:
+      tags:
+      - sender
+      summary: |
+        Submit a new parcel to the logistics service.
+      operationId: submitParcel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/parcel'
+        required: true
+      responses:
+        200:
+          description: Successfully submitted the new parcel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/newParcelInfo'
+        400:
+          description: The operation failed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /parcel/{trackingId}:
+    get:
+      tags:
+      - receipient
+      summary: |
+        Find the latest state of a parcel by its tracking ID.
+      operationId: trackParcel
+      parameters:
+        - $ref: '#/components/parameters/trackingId'
+      responses:
+        200:
+          description: Parcel exists, here's the tracking information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trackingInformation'
+        400:
+          description: The operation failed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Parcel does not exist with this tracking ID.
+          content: {}
+    post:
+      tags:
+      - logisticsPartner
+      summary: |
+        Transfer an existing parcel from the service of a logistics partner.
+      operationId: transitionParcel
+      parameters:
+        - $ref: '#/components/parameters/trackingId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/parcel'
+        required: true
+      responses:
+        200:
+          description: Successfully transitioned the parcel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/newParcelInfo'
+        400:
+          description: The operation failed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /parcel/{trackingId}/reportHop/{code}:
+    post:
+      operationId: reportParcelHop
+      summary: |
+        Report that a Parcel has arrived at a certain hop either Warehouse or Truck.
+      parameters:
+        - $ref: '#/components/parameters/trackingId'
+        - $ref: '#/components/parameters/code'
+      responses:
+        200:
+          description: Successfully reported hop.
+        404:
+          description: |
+            Parcel does not exist with this tracking ID or hop with code not found.
+        400:
+          $ref: "#/components/responses/400"
+      tags: 
+        - staff
+  /parcel/{trackingId}/reportDelivery/:
+    post:
+      tags:
+      - staff
+      summary: |
+        Report that a Parcel has been delivered at it's final destination address.
+      operationId: reportParcelDelivery
+      parameters:
+        - $ref: '#/components/parameters/trackingId'
+      responses:
+        200:
+          description: Successfully reported hop.
+          content: {}
+        400:
+          description: The operation failed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: |
+            Parcel does not exist with this tracking ID.
+          content: {}
+  /warehouse:
+    get:
+      tags:
+      - warehouse-management
+      summary: |
+        Exports the hierarchy of Warehouse and Truck objects.
+      operationId: exportWarehouses
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/warehouse'
+        400:
+          description: An error occurred loading.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: No hierarchy loaded yet.
+          content: {}
+    post:
+      tags:
+      - warehouse-management
+      summary: |
+        Imports a hierarchy of Warehouse and Truck objects.
+      operationId: importWarehouses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/warehouse'
+        required: true
+      responses:
+        200:
+          description: Successfully loaded.
+          content: {}
+        400:
+          description: The operation failed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  /parcel/{trackingId}/webhooks:
+    get:
+      tags:
+      - parcelWebhook
+      description: Gets all registered subscriptions for the parcel webhook.
+      operationId: ApiParcelByTrackingIdWebhooksGet
+      parameters:
+      - name: trackingId
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9]{9}$
+      responses:
+        200:
+          description: List of webooks for the `trackingId`
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/webhookResponses'
+        404:
+          description: No parcel found with that tracking ID.
+          content: {}
+    post:
+      tags:
+      - parcelWebhook
+      description: Subscribes to a webhook notification for the specific parcel.
+      operationId: ApiParcelByTrackingIdWebhooksPost
+      parameters:
+      - name: trackingId
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[A-Z0-9]{9}$
+      - name: url
+        in: query
+        required: true
+        schema:
+          type: string
+      callbacks:
+        myevent:
+          '{$request.query.url}?trackingId={$request.path.trackingId}':
+            post:
+              requestBody:
+                content:
+                  application/json:
+                    schema: 
+                      $ref: '#/components/schemas/webhookMessage'
+              responses:
+                200:
+                  description: OK
+                  content: {}
+      responses:
+        200:
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/webhookResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhookResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/webhookResponse'
+        404:
+          description: No parcel found with that tracking ID.
+          content: {}
+            
+  /parcel/webhooks/{id}:
+    delete:
+      tags:
+      - parcelWebhook
+      description: Removes an existing webhook subscription.
+      operationId: ApiParcelWebhooksByIdDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Success
+          content: {}
+        404:
+          description: Subscription does not exist.
+          content: {}
+          
+components:
+  parameters:
+    code:
+      name: code
+      in: path
+      required: true
+      schema:
+        pattern: ^[A-Z]{4}\d{1,4}$
+        type: string
+      description: The Code of the hop (Warehouse or Truck).
+    trackingId:
+      name: trackingId
+      in: path
+      description: |
+        The tracking ID of the parcel.
+        E.g. PYJRB4HZ6
+      required: true
+      schema:
+        pattern: ^[A-Z0-9]{9}$
+        type: string
+      
+  schemas:
+    parcel:
+      required:
+      - receipient
+      - sender
+      - weight
+      type: object
+      properties:
+        weight:
+          type: number
+          format: float
+        receipient:
+          $ref: '#/components/schemas/receipient'
+        sender:
+          $ref: '#/components/schemas/receipient'
+      example:
+        weight: 5.2
+        receipient:
+          name: Microsoft
+          street: Am Europlatz 3
+          postalCode: A-1120
+          city: Wien
+          country: Austria
+        sender:
+          name: Tux L.-Oves Azure
+          street: 9812 NE Aluxstreet
+          postalCode: 98052
+          city: Redmond
+          country: United States
+    receipient:
+      required:
+      - city
+      - name
+      - postalCode
+      - street
+      - country
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of person or company.
+        street:
+          type: string
+          description: Street
+        postalCode:
+          type: string
+          description: Postalcode
+        city:
+          type: string
+          description: City
+        country:
+          type: string
+          description: Country
+      example:
+        name: Tux L.-Oves Azure
+        street: Am Europlatz 3
+        postalCode: A-1120
+        city: Wien
+        country: Austria
+    hop:
+      required:
+      - code
+      - hopType
+      - description
+      - processingDelayMins
+      type: object
+      discriminator:
+        propertyName: hopType
+      properties:
+        hopType:
+          type: string
+        code:
+          pattern: ^[A-Z]{4}\d{1,4}$
+          type: string
+          description: Unique CODE of the hop.
+        description:
+          type: string
+          description: Description of the hop.
+        processingDelayMins:
+          type: integer
+          description: Delay processing takes on the hop.
+          
+    warehouse:
+      required:
+      - code
+      - description
+      - processingDelayMins
+      - nextHops
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/hop'
+        - properties:
+            nextHops:
+              description: Next hops after this warehouse (warehouses or trucks).
+              type: array
+              items:
+                type: object
+                required:
+                  - traveltimeMins
+                  - hop
+                properties:
+                  traveltimeMins: 
+                    type: integer
+                  hop:
+                    $ref: '#/components/schemas/hop'
+                
+    transferwarehouse:
+      required:
+      - code
+      - description
+      - regionGeoJson
+      - processingDelayMins
+      - transferToLogisticsPartner
+      - logisticsPartner
+      - logisticsPartnerUrl
+      allOf:
+        - $ref: '#/components/schemas/hop'
+        - properties:
+            regionGeoJson:
+              type: string
+              description: GeoJSON of the are covered by the logistics partner.
+            logisticsPartner:
+              description: Name of the logistics partner.
+              type: string
+            logisticsPartnerUrl:
+              description: BaseURL of the logistics partner's service.
+              type: string
+          
+    truck:
+      allOf:
+        - $ref: '#/components/schemas/hop'
+        - properties:
+            regionGeoJson:
+              type: string
+              description: GeoJSON of the are covered by the truck.
+            numberPlate:
+              type: string
+              description: The truck's number plate.
+      required:
+      - code
+      - description
+      - numberPlate
+      - processingDelayMins
+      - regionGeoJson
+      type: object
+
+    error:
+      required:
+      - errorMessage
+      type: object
+      properties:
+        errorMessage:
+          type: string
+          description: The error message.
+    newParcelInfo:
+      type: object
+      properties:
+        trackingId:
+          pattern: ^[A-Z0-9]{9}$
+          type: string
+          description: |
+            The tracking ID of the parcel.
+          example: PYJRB4HZ6
+          
+    hopArrival:
+      required:
+      - code
+      - dateTime
+      type: object
+      properties:
+        code:
+          pattern: ^[A-Z]{4}\d{1,4}$
+          type: string
+          description: Unique CODE of the hop.
+        dateTime:
+          type: string
+          description: The date/time the parcel arrived at the hop.
+          format: date-time
+    trackingInformation:
+      required:
+      - futureHops
+      - state
+      - visitedHops
+      type: object
+      properties:
+        state:
+          type: string
+          description: State of the parcel.
+          enum:
+          - InTransport
+          - InTruckDelivery
+          - Delivered
+        visitedHops:
+          type: array
+          description: Hops visited in the past.
+          items:
+            $ref: '#/components/schemas/hopArrival'
+        futureHops:
+          type: array
+          description: Hops coming up in the future - their times are estimations.
+          items:
+            $ref: '#/components/schemas/hopArrival'
+          
+    webhookResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        trackingId:
+          type: string
+          pattern: ^[A-Z0-9]{9}$
+        url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    webhookResponses:
+      type: array
+      items:
+        $ref: '#/components/schemas/webhookResponse'
+
+    webhookMessage:
+      allOf:
+        - $ref: '#/components/schemas/trackingInformation'
+        - properties:
+            trackingId:
+              type: string
+              pattern: ^[A-Z0-9]{9}$
+        
+  responses:
+    400:
+      description: The operation failed due to an error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'

@@ -1,0 +1,55 @@
+body, h1, h2, h3, h4, h5, h6 {
+    font-family: "Lato", sans-serif;
+}
+
+body, html {
+    height: 100%;
+    color: #777;
+    line-height: 1.8;
+}
+
+/* Create a Parallax Effect */
+.bgimg-1, .bgimg-2, .bgimg-3 {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.w3-wide {
+    letter-spacing: 10px;
+}
+
+.w3-hover-opacity {
+    cursor: pointer;
+}
+
+.w3-bar .w3-bar-item {
+    padding: 15px 148px;
+
+}
+
+.disclaimer {
+    position:absolute;
+    bottom:0;
+}
+
+.customKUH {
+    position: absolute;
+    padding: 7% 40% 0% 35%;
+}
+.customKUH2 {
+    margin: 20% 45% 0% 35%;
+}
+.customKUH3 {
+    margin: 32% 45% 0% 35%;
+}
+
+.w3-red {
+    margin: 15px 15px 13px 120px;
+    padding: 10px 50px 10px 50px;
+}
+
+#myNavbar {
+    background-color: #fc0;
+}

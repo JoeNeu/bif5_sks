@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!--
+      Make sure documentation XML is also included when publishing (not only when testing)
+      see https://github.com/Azure/service-fabric-issues/issues/190
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>TeamC.SKS.Services</Description>
+    <Copyright>TeamC.SKS.Services</Copyright>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <!--
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DocumentationFile>bin\Debug\netcoreapp3.0\TeamC.SKS.Package.Services.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DocumentationFile>bin\Release\netcoreapp3.0\TeamC.SKS.Package.Services.xml</DocumentationFile>
+  </PropertyGroup>
+  -->
+  
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.OpenApi" Version="1.1.4" />
+    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="SwaggerUi" Version="1.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="5.0.0-rc4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="5.0.0-rc4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.0.0-rc4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.0.0-rc4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TeamC.SKS.BusinessLogic.Interfaces\TeamC.SKS.BusinessLogic.Interfaces.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.BusinessLogic\TeamC.SKS.BusinessLogic.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.DataAccess.Interfaces\TeamC.SKS.DataAccess.Interfaces.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.DataAccess.Sql\TeamC.SKS.DataAccess.Sql.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.Package.Services.DTOs\TeamC.SKS.Package.Services.DTOs.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.Package.Services.Interfaces\TeamC.SKS.Package.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.Package.Services.Mapper\TeamC.SKS.Package.Services.Mapper.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.ServiceAgents.Interfaces\TeamC.SKS.ServiceAgents.Interfaces.csproj" />
+    <ProjectReference Include="..\TeamC.SKS.ServiceAgents\TeamC.SKS.ServiceAgents.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\pic\" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
+</Project>
